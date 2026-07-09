@@ -2,23 +2,15 @@
   <div class="amap">
     <div id="container">
       <div class="keywordClass">
-        <el-input
-          placeholder="关键字检索"
-          id="keywordInput"
-          v-model="keywordInput"
-        >
+        <el-input placeholder="关键字检索" id="keywordInput" v-model="keywordInput">
           <template #append>
-            <el-button icon="el-icon-search" @click="keywordSearch"
-              >搜索</el-button
-            >
+            <el-button @click="keywordSearch">搜索</el-button>
           </template>
         </el-input>
       </div>
       <div id="panel" class="panelClass"></div>
     </div>
-    <!-- 路线规划 -->
     <div class="routePlan">
-      <!-- 搜索栏 -->
       <div class="routeSearchClass">
         <div class="locationSearch">
           <el-input placeholder="起始位置" v-model="locationSearchStart" />
@@ -27,48 +19,37 @@
         </div>
         <div class="covertSearchType">
           <ul>
-            <li>
+            <li v-for="item in routeTypes" :key="item.value">
+              <div><span>{{ item.label }}</span></div>
               <div>
-                <span>驾车</span>
-              </div>
-              <div>
-                <el-radio label="drivingComponent" v-model="radioChecked" @change="checkBindVal"><span /></el-radio>
-              </div>
-            </li>
-            <li>
-              <div>
-                <span>步行</span>
-              </div>
-              <div>
-                <el-radio label="walkingComponent" v-model="radioChecked" @change="checkBindVal"><span /></el-radio>
-              </div>
-            </li>
-            <li>
-              <div>
-                <span>骑行</span>
-              </div>
-              <div>
-                <el-radio label="RidingComponent" v-model="radioChecked" @change="checkBindVal"><span /></el-radio>
-              </div>
-            </li>
-            <li>
-              <div>
-                <span>公交</span>
-              </div>
-              <div>
-                <el-radio label="TransferComponent" v-model="radioChecked" @change="checkBindVal"><span /></el-radio>
+                <el-radio :label="item.value" v-model="radioChecked" @change="checkBindVal">
+                  <span />
+                </el-radio>
               </div>
             </li>
           </ul>
         </div>
       </div>
-      <!-- 路线详情 -->
       <div id="routePanel" class="routePanelClass"></div>
     </div>
   </div>
 </template>
-<script>
-import Amap from "./Amap";
-export default Amap;
+
+<script setup>
+import { ROUTE_TYPES } from '@/constants/amap';
+import { useAmap } from '@/composables/useAmap';
+
+const routeTypes = ROUTE_TYPES;
+
+const {
+  keywordInput,
+  locationSearchStart,
+  locationSearchEnd,
+  radioChecked,
+  keywordSearch,
+  routeSearch,
+  checkBindVal,
+} = useAmap();
 </script>
+
 <style src="./Amap.css"></style>

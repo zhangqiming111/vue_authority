@@ -1,128 +1,124 @@
 <template>
-  <el-select ref="select" v-model="valueTitle" :clearable="clearable" @clear="clearHandle">
+  <el-select ref="selectRef" v-model="valueTitle" :clearable="clearable" @clear="clearHandle">
     <el-option :label="valueTitle" :value="valueId">
       <el-tree
         id="tree-option"
-        ref="selectTree"
+        ref="selectTreeRef"
         default-expand-all
         :data="options"
-        :props="props"
-        :node-key="props.value"
+        :props="fieldNames"
+        :node-key="fieldNames.value"
         :expand-on-click-node="false"
         @node-click="handleNodeClick"
-      >
-      </el-tree>
+      />
     </el-option>
   </el-select>
 </template>
-<script>
-export default {
-  name: "SelectTree",
-  props: {
-    /* 配置项 */
-    props: {
-      type: Object,
-      default: () => {
-        return {
-          value: "id", // ID字段名
-          label: "title", // 显示名称
-          children: "children", // 子级字段名
-        };
-      },
-    },
-    /* 选项列表数据(树形结构的对象数组) */
-    options: {
-      type: Array,
-      default: () => {
-        return [];
-      },
-    },
-    /* 初始值 */
-    value: {
-      type: Number,
-      default: () => {
-        return 0;
-      },
-    },
-    /* 选中的节点值 */
-    onlyKey: {
-      type: Number,
-      default: () => {
-        return 0;
-      }
-    },
-    /* 可清空选项 */
-    clearable: {
-      type: Boolean,
-      default: () => {
-        return true;
-      },
-    },
+
+<script setup>
+import { ref, watch, onMounted, nextTick } from 'vue';
+
+const props = defineProps({
+  fieldNames: {
+    type: Object,
+    default: () => ({
+      value: 'id',
+      label: 'title',
+      children: 'children',
+    }),
   },
-  data() {
-    return {
-      valueId: '', // 初始值
-      valueTitle: "",
-      valueKey: ''
-    };
+  options: {
+    type: Array,
+    default: () => [],
   },
-  mounted() {
-    this.valueId = this.value;
-    if(this.onlyKey) this.$refs.selectTree.getNode(this.onlyKey).visible = false;
-    this.initHandle();
+  value: {
+    type: Number,
+    default: 0,
   },
-  methods: {
-    // 初始化值
-    initHandle() {
-      if (this.valueId) {
-        this.valueTitle = this.$refs.selectTree.getNode(this.valueId).data[
-          this.props.label
-        ]; // 初始化显示
-        this.$refs.selectTree.setCurrentKey(this.valueId); // 设置默认选中
-      }else {
-        this.valueTitle = '';
-      }
-      this.$nextTick(() => {
-        let scrollWrap = document.querySelectorAll(
-          ".el-scrollbar .el-select-dropdown__wrap"
-        )[0];
-        let scrollBar = document.querySelectorAll(
-          ".el-scrollbar .el-scrollbar__bar"
-        );
-        scrollWrap.style.cssText =
-          "margin: 0px; max-height: none; overflow: hidden;";
-        scrollBar.forEach((ele) => (ele.style.width = 0));
-      });
-    },
-    // 切换选项
-    handleNodeClick(node) {
-      console.log('node',node);
-      this.valueTitle = node[this.props.label];
-      this.valueId = node[this.props.value];
-      this.$emit("getValue", this.valueId);
-      this.$refs.select.blur()
-    },
-    // 清除选中
-    clearHandle() {
-      this.valueTitle = "";
-      this.valueId = null;
-      this.clearSelected();
-      this.$emit("getValue", null);
-    },
-    /* 清空选中样式 */
-    clearSelected() {
-      let allNode = document.querySelectorAll("#tree-option .el-tree-node");
-      allNode.forEach((element) => element.classList.remove("is-current"));
-    },
+  onlyKey: {
+    type: Number,
+    default: 0,
   },
-  watch: {
-    value() {
-      this.valueId = this.value;
-      this.initHandle();
+  clearable: {
+    type: Boolean,
+    default: true,
+  },
+});
+
+const emit = defineEmits(['getValue']);
+
+const selectRef = ref(null);
+const selectTreeRef = ref(null);
+const valueId = ref('');
+const valueTitle = ref('');
+
+function fixDropdownScroll() {
+  nextTick(() => {
+    const scrollWrap = document.querySelectorAll(
+      '.el-scrollbar .el-select-dropdown__wrap'
+    )[0];
+    const scrollBars = document.querySelectorAll('.el-scrollbar .el-scrollbar__bar');
+    if (scrollWrap) {
+      scrollWrap.style.cssText = 'margin: 0px; max-height: none; overflow: hidden;';
     }
-  },
-};
+    scrollBars.forEach((bar) => {
+      bar.style.width = 0;
+    });
+  });
+}
+
+function syncDisplay() {
+  if (!valueId.value) {
+    valueTitle.value = '';
+    fixDropdownScroll();
+    return;
+  }
+
+  const tree = selectTreeRef.value;
+  if (!tree) return;
+
+  const node = tree.getNode(valueId.value);
+  if (!node) return;
+
+  valueTitle.value = node.data[props.fieldNames.label];
+  tree.setCurrentKey(valueId.value);
+  fixDropdownScroll();
+}
+
+function handleNodeClick(node) {
+  valueTitle.value = node[props.fieldNames.label];
+  valueId.value = node[props.fieldNames.value];
+  emit('getValue', valueId.value);
+  selectRef.value?.blur();
+}
+
+function clearHandle() {
+  valueTitle.value = '';
+  valueId.value = null;
+  document.querySelectorAll('#tree-option .el-tree-node').forEach((el) => {
+    el.classList.remove('is-current');
+  });
+  emit('getValue', null);
+}
+
+watch(
+  () => props.value,
+  (val) => {
+    valueId.value = val;
+    syncDisplay();
+  }
+);
+
+onMounted(() => {
+  valueId.value = props.value;
+  if (props.onlyKey && selectTreeRef.value) {
+    const node = selectTreeRef.value.getNode(props.onlyKey);
+    if (node) node.visible = false;
+  }
+  syncDisplay();
+});
 </script>
+
 <style scoped>
 .el-select {
   width: 100%;
@@ -137,18 +133,18 @@ export default {
 .el-select-dropdown__item.selected {
   font-weight: normal;
 }
-ul li >>> .el-tree .el-tree-node__content {
+:deep(.el-tree .el-tree-node__content) {
   height: auto;
   padding: 0 20px;
 }
 .el-tree-node__label {
   font-weight: normal;
 }
-.el-tree >>> .is-current .el-tree-node__label {
+:deep(.el-tree .is-current .el-tree-node__label) {
   color: #409eff;
   font-weight: 700;
 }
-.el-tree >>> .is-current .el-tree-node__children .el-tree-node__label {
+:deep(.el-tree .is-current .el-tree-node__children .el-tree-node__label) {
   color: #606266;
   font-weight: normal;
 }

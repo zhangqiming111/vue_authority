@@ -1,3 +1,36 @@
 .formDesign {
-    
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  min-height: calc(100vh - 120px);
+}
+.formDesign-panel,
+.formDesign-canvas {
+  flex: 1;
+  background: #fff;
+  border-radius: 4px;
+  padding: 16px;
+}
+.field-list,
+.canvas-area {
+  min-height: 400px;
+}
+.field-item {
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border: 1px dashed #dcdfe6;
+  border-radius: 4px;
+  cursor: move;
+  background: #fafafa;
+}
+.canvas-field {
+  padding: 12px;
+  margin-bottom: 12px;
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
+}
+.canvas-field label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
 }

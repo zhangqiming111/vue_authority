@@ -5,7 +5,7 @@ export default [
     name: "dashboard",
     icon: "icon-grid",
     title: "首页",
-    meta: { breamub: "首页" },
+    meta: { breadcrumb: '首页' },
     component: () => import("./dashboard/Dashboard.vue"),
   },
 ];

@@ -1,3 +1,23 @@
 .webSocket {
-    padding: 20px;
+  padding: 20px;
+}
+.webSocket-toolbar,
+.webSocket-send {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.webSocket-send .el-input {
+  flex: 1;
+}
+.webSocket-logs {
+  background: #fff;
+  padding: 16px;
+  min-height: 240px;
+  border-radius: 4px;
+}
+.webSocket-logs p {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: #606266;
 }

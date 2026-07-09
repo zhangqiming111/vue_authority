@@ -4,7 +4,7 @@
         <div class="market-mobile">
             <div class="mobile-phone">
                 <div class="phone-switch">
-                    <el-switch v-model="switchSelect" active-text="抽奖" inactive-text="扫码" @change="switchChange" />
+                    <el-switch v-model="switchSelect" active-text="抽奖" inactive-text="扫码" />
                     <el-button v-if="switchSelect" type="primary" round size="small" @click="restartCountDown(60)">重新计时
                     </el-button>
                 </div>
@@ -109,9 +109,48 @@
         </div>
     </div>
 </template>
-<script>
-import Market from './Market';
-export default Market;
+<script setup>
+import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { DEFAULT_USERS, MARKET_GIFTS, drawLottery } from '@/constants/lottery';
+
+const activeName = ref('first');
+const switchSelect = ref(false);
+const timer = ref(null);
+const countdown = ref(60);
+const userList = DEFAULT_USERS;
+const giftList = MARKET_GIFTS;
+const getGiftList = ref([]);
+const firstForm = ref({
+  winPrizeType: '',
+  startPrizeTime: '',
+  prizeTableInfo: [],
+  prizeTableColumn: [
+    { label: '奖项类型', prop: 'prizeType' },
+    { label: '奖项名称', prop: 'prizeName' },
+    { label: '奖项数量', prop: 'prizeNum' },
+  ],
+});
+const secondForm = ref({});
+
+function startCountdown() {
+  timer.value = setInterval(() => {
+    countdown.value -= 1;
+    if (countdown.value <= 0) {
+      clearInterval(timer.value);
+      getGiftList.value = drawLottery(userList, giftList);
+    }
+  }, 1000);
+}
+
+function restartCountDown(seconds) {
+  countdown.value = seconds;
+  getGiftList.value = [];
+  clearInterval(timer.value);
+  startCountdown();
+}
+
+onMounted(startCountdown);
+onBeforeUnmount(() => clearInterval(timer.value));
 </script>
 <style src="./Market.css" scoped>
 
